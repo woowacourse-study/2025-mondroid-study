@@ -1,9 +1,10 @@
 # 2025-mondroid-study
+엄재웅님의 **'Manifest Android Interview'** 책의 퀴즈를 바탕으로 키워드 공부 및 안드로이드 면접 준비 스터디  
+(mon)day + (mo)rning에 진행되는 + an(droid) 스터디
 
 ## 진행방식
 매주 월요일 11~12시
 
-- **'Manifest Android Interview'** 책의 퀴즈를 바탕으로 스터디를 진행합니다.
 - 스터디 전까지 각자 질문에 대한 답변 정리 및 학습
 - 인터뷰 형식으로 돌아가며 질문하고 답변
   - 인터뷰 순서 및 질문은 [핀볼](https://lazygyu.github.io/roulette/)을 이용해서 정한다
