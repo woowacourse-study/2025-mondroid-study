@@ -9,7 +9,7 @@
   - 인터뷰 순서 및 질문은 [핀볼](https://lazygyu.github.io/roulette/)을 이용해서 정한다
   - 인터뷰 시간은 각각 최대 20분씩 진행된다.
 
-*스터디 공부 내용 및 인터뷰 과정은 [Discussions](https://github.com/woowacourse-study/2025-babyPotato-study/discussions)에서 확인하실 수 있습니다!
+*스터디 공부 내용 및 인터뷰 과정은 [Discussions](https://github.com/woowacourse-study/2025-mondroid-study/discussions)에서 확인하실 수 있습니다!
 
 ## 스터디원
 | <img src="https://github.com/gahyunkim.png" width="125"/> | <img src="https://github.com/ijh1298.png" width="125"/> | <img src="https://github.com/etama123.png" width="125"/> |
