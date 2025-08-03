@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: "0 * * * *"   # 매 1시간
   workflow_dispatch:
+  discussion:
+    types: [created, edited, answered, unanswered, labeled, unlabeled, category_changed]  # 필요에 맞게 줄여도 됨
+  discussion_comment:
+    types: [created, edited, deleted]
+
+permissions:
+  contents: write     # README 수정/커밋
+  discussions: read   # /discussions API 읽기
 
 jobs:
   update-readme:
