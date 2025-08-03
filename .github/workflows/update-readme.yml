@@ -67,27 +67,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # 마커 존재 확인(없으면 실패)
-          grep -q "<!-- discussions-list-start -->" README.md
-          grep -q "<!-- discussions-list-end -->"   README.md
 
-          awk '
-            /<!-- discussions-list-start -->/ {
-              print
-              while ((getline line < "/tmp/discussions_table.md") > 0) print line
-              close("/tmp/discussions_table.md")
-              inside=1
-              next
-            }
-            /<!-- discussions-list-end -->/ {
-              print
-              inside=0
-              next
-            }
-            !inside { print }
-          ' README.md > README.tmp.md
-
+          # 디버그: 파일과 마커 체크(실패 시 원인 출력)
+          test -f README.md || { echo "README.md not found"; exit 1; }
+          test -s /tmp/discussions_table.md || { echo "/tmp/discussions_table.md is empty or missing"; exit 1; }
+          grep -q "<!-- discussions-list-start -->" README.md || { echo "start marker not found"; exit 1; }
+          grep -q "<!-- discussions-list-end -->"   README.md || { echo "end marker not found"; exit 1; }
+      
+          # Perl로 마커 사이를 /tmp/discussions_table.md 내용으로 치환
+          perl -0777 -pe 'BEGIN{
+            local $/;
+            open my $fh, "<", "/tmp/discussions_table.md" or die $!;
+            our $tb = <$fh>;
+            close $fh;
+          } s/(<!-- discussions-list-start -->)(.*?)(<!-- discussions-list-end -->)/$1."\n".$tb."\n".$3/sg' \
+            README.md > README.tmp.md
+      
           mv README.tmp.md README.md
+
 
       - name: Commit and push
         shell: bash
