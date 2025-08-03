@@ -2,7 +2,7 @@ name: Update Discussion List in README
 
 on:
   schedule:
-    - cron: "0 * * * *"   # 매 1시간
+    - cron: "0 * * * *"    # 매 시간
   workflow_dispatch:
 
 jobs:
@@ -13,8 +13,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract owner/repo
+      - name: Extract owner/repo (schedule 트리거 안전)
         id: repo
+        shell: bash
         run: |
           echo "owner=${GITHUB_REPOSITORY%/*}" >> "$GITHUB_OUTPUT"
           echo "repo=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_OUTPUT"
@@ -30,47 +31,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Discussions list markdown
-        id: generate_md
+      # 🔹 표 본문(마커 제외)을 /tmp/discussions_body.md 로 생성
+      - name: Build discussions table body
         shell: bash
         run: |
           set -euo pipefail
+          # 반드시 '싱글쿼트'로 jq 필터 감싸기!
+          rows="$(printf '%s' '${{ steps.get_discussions.outputs.data }}' \
+            | jq -r '.[] | 
+              # 제목에 | 가 있을 때 테이블 깨짐 방지
+              "| [\(.title|gsub(\"\\|\";\"\\\\|\"))](\(.html_url)) | \(.user.login) | \(.comments)"'
+          )"
 
-          # jq 필터는 반드시 '싱글쿼트'로 감싸기
-          rows="$(printf '%s' "${{ steps.get_discussions.outputs.data }}" \
-            | jq -r '.[] | "| [\(.title)](\(.html_url)) | \(.user.login) | \(.comments)"')"
-
-          # 출력 블록을 한 번에 기록 (중간 실패로 EOF 짤림 방지)
           {
-            echo 'discussions<<EOF'
-            echo '<!-- discussions-list-start -->'
-            echo
             echo '| Title | Author | Comments |'
             echo '|-------|--------|----------|'
             printf '%s\n' "$rows"
-            echo
-            echo '<!-- discussions-list-end -->'
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+          } > /tmp/discussions_body.md
 
+      # 🔹 README의 마커 사이만 /tmp/discussions_body.md 로 교체
       - name: Replace discussions list in README.md
         shell: bash
         run: |
           set -euo pipefail
-          # 마커 사이만 새 블록으로 교체
-          awk -v newblk='${{ steps.generate_md.outputs.discussions }}' '
-            BEGIN{inblk=0}
-            /<!-- discussions-list-start -->/ {print; print newblk; inblk=1; next}
-            /<!-- discussions-list-end -->/   {print; inblk=0; next}
-            !inblk {print}
+          awk '
+            /<!-- discussions-list-start -->/ { print; system("cat /tmp/discussions_body.md"); skip=1; next }
+            /<!-- discussions-list-end -->/   { print; skip=0; next }
+            !skip { print }
           ' README.md > README.tmp.md
           mv README.tmp.md README.md
 
-      - name: Commit and push updated README
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push
+        shell: bash
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
           if ! git diff --cached --quiet; then
