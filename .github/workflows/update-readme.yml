@@ -51,18 +51,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          printf '%s' '${{ steps.get_discussions.outputs.data }}' > /tmp/discussions.json
+      
           {
             echo '| Title | Author | Comments |'
             echo '|-------|--------|----------|'
-            # 최신(updated_at) 기준 내림차순 정렬 후 출력
             jq -r '
-              sort_by(.updated_at) | reverse
+              # Open만
+              map(select(.state == "open"))
+              # 최근 활동(updated_at) 기준 내림차순
+              | sort_by(.updated_at) | reverse
+              # 상위 5개만
+              | .[:5]
+              # 마크다운 표 한 줄씩 생성 (제목의 |/개행 제거)
               | .[]
               | "| [\(.title | gsub("[|\r\n]"; " "))](\(.html_url)) | \(.user.login) | \(.comments) |"
             ' /tmp/discussions.json
           } > /tmp/discussions_table.md
-          # 혹시 모를 CRLF 제거
-          tr -d "\r" < /tmp/discussions_table.md > /tmp/discussions_table.unix.md && mv /tmp/discussions_table.unix.md /tmp/discussions_table.md
+      
+          # CRLF 정리(혹시 모를 줄바꿈 깨짐 방지)
+          tr -d '\r' < /tmp/discussions_table.md > /tmp/discussions_table.unix.md && mv /tmp/discussions_table.unix.md /tmp/discussions_table.md
+
 
 
       # README 마커 사이만 교체 — awk + getline (system/cat 사용 안 함)
