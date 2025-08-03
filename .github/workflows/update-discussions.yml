@@ -2,7 +2,7 @@ name: Update Discussion List in README
 
 on:
   schedule:
-    - cron: "0 * * * *"    # 매 시간
+    - cron: "0 * * * *"   # 매 1시간
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
         shell: bash
         run: |
           echo "owner=${GITHUB_REPOSITORY%/*}" >> "$GITHUB_OUTPUT"
-          echo "repo=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_OUTPUT"
+          echo "repo=${GITHUB_REPOSITORY#*/}"  >> "$GITHUB_OUTPUT"
 
       - name: Fetch discussions via GitHub API
         id: get_discussions
@@ -26,42 +26,47 @@ jobs:
         with:
           route: GET /repos/{owner}/{repo}/discussions
           owner: ${{ steps.repo.outputs.owner }}
-          repo: ${{ steps.repo.outputs.repo }}
+          repo:  ${{ steps.repo.outputs.repo }}
           per_page: 5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 🔹 표 본문(마커 제외)을 /tmp/discussions_body.md 로 생성
-      - name: Build discussions table body
+      - name: Generate Discussions list markdown (rows only)
+        id: rows
         shell: bash
         run: |
           set -euo pipefail
-          # 반드시 '싱글쿼트'로 jq 필터 감싸기!
-          rows="$(printf '%s' '${{ steps.get_discussions.outputs.data }}' \
-            | jq -r '.[] | 
-              # 제목에 | 가 있을 때 테이블 깨짐 방지
-              "| [\(.title|gsub(\"\\|\";\"\\\\|\"))](\(.html_url)) | \(.user.login) | \(.comments)"'
-          )"
-
+          # outputs.data 를 here-string(<<<) 으로 jq에 안전 전달
+          rows="$(jq -r '.[] |
+            # 제목 내 | 또는 개행은 표 깨짐 방지
+            "| [\(.title | gsub("\\||\\n"; " "))](\(.html_url)) | \(.user.login) | \(.comments)"' \
+            <<< '${{ steps.get_discussions.outputs.data }}')"
+          # 멀티라인 아웃풋을 한 번에 $GITHUB_OUTPUT에 안전 기록
           {
+            echo 'discussions<<EOF'
+            echo '<!-- discussions-list-start -->'
+            echo
             echo '| Title | Author | Comments |'
             echo '|-------|--------|----------|'
             printf '%s\n' "$rows"
-          } > /tmp/discussions_body.md
+            echo
+            echo '<!-- discussions-list-end -->'
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
-      # 🔹 README의 마커 사이만 /tmp/discussions_body.md 로 교체
       - name: Replace discussions list in README.md
         shell: bash
         run: |
           set -euo pipefail
-          awk '
-            /<!-- discussions-list-start -->/ { print; system("cat /tmp/discussions_body.md"); skip=1; next }
-            /<!-- discussions-list-end -->/   { print; skip=0; next }
-            !skip { print }
+          awk -v newblk='${{ steps.rows.outputs.discussions }}' '
+            BEGIN{inblk=0}
+            /<!-- discussions-list-start -->/ { print; print newblk; inblk=1; next }
+            /<!-- discussions-list-end -->/   { print; inblk=0;  next }
+            !inblk { print }
           ' README.md > README.tmp.md
           mv README.tmp.md README.md
 
-      - name: Commit and push
+      - name: Commit and push updated README
         shell: bash
         run: |
           git config user.name  "github-actions[bot]"
