@@ -47,38 +47,25 @@ jobs:
           printf '%s' '${{ steps.save_json.outputs.data }}' > /tmp/discussions.json
 
       # 최신 활동순( updated_at desc ) 상위 5개 표 생성
-      - name: Build discussions table file (latest activity + participants only)
+      - name: Build discussions table file (latest activity)
         shell: bash
         run: |
           set -euo pipefail
           {
-            echo '| Title | Participants | Comments |'
-            echo '|-------|--------------|----------|'
+            echo '| Title |  Labels  | Comments |'
+            echo '|-------|--------|----------|'
             jq -r '
-              def clean_title: gsub("[|\r\n]"; " ");
-              def trunc5(a):
-                (a | unique) as $u
-                | if ($u | length) > 5 then ($u[0:5] + ["+" + ((($u | length)-5)|tostring)]) else $u end;
-      
-              .data.repository.discussions.nodes
-              | .[:5]   # 최신 활동순 Top 5 (GraphQL에서 이미 UPDATED_AT DESC로 가져옴)
+              # 최신 활동(updated_at) 기준 내림차순
+              sort_by(.updated_at) | reverse
+              # 상위 5개
+              | .[:5]
+              # 마크다운 표 한 줄씩 생성 (제목의 |/개행은 공백으로 치환)
               | .[]
-              | . as $d
-              # 참여자 문자열 (중복 제거 후 최대 5명, 초과 시 +N)
-              | ($d.participants.nodes
-                  | map(.login)
-                  # ↓ 작성자를 참여자 목록에서 빼고 싶으면 다음 줄 주석 해제
-                  # | map(select(. != ($d.author.login // "")))
-                  | trunc5
-                  | join(", ")
-                ) as $parts
-              | "| [\($d.title | clean_title)](\($d.url)) | \($parts) | \($d.comments.totalCount) |"
+              | "| [\(.title | gsub("[|\r\n]"; " "))](\(.html_url)) | \($labels) | \(.comments) |"
             ' /tmp/discussions.json
           } > /tmp/discussions_table.md
-
           # CRLF 방지
           tr -d '\r' < /tmp/discussions_table.md > /tmp/discussions_table.unix && mv /tmp/discussions_table.unix /tmp/discussions_table.md
-
           # (선택) 미리보기
           echo "Generated table:" && cat /tmp/discussions_table.md
 
