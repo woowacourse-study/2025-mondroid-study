@@ -2,18 +2,18 @@ name: Update Discussion List in README
 
 on:
   schedule:
-    - cron: "0 * * * *"   # 매 1시간
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract owner/repo (schedule 트리거 안전)
+      # schedule 트리거에서도 안전하게 owner/repo 추출
+      - name: Extract owner/repo
         id: repo
         shell: bash
         run: |
@@ -26,43 +26,33 @@ jobs:
         with:
           route: GET /repos/{owner}/{repo}/discussions
           owner: ${{ steps.repo.outputs.owner }}
-          repo:  ${{ steps.repo.outputs.repo }}
+          repo: ${{ steps.repo.outputs.repo }}
           per_page: 5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Discussions list markdown (rows only)
-        id: rows
+      # 🔹 표(헤더+rows)를 임시 파일로 생성
+      - name: Build discussions table file
         shell: bash
         run: |
           set -euo pipefail
-          # outputs.data 를 here-string(<<<) 으로 jq에 안전 전달
-          rows="$(jq -r '.[] |
-            # 제목 내 | 또는 개행은 표 깨짐 방지
-            "| [\(.title | gsub("\\||\\n"; " "))](\(.html_url)) | \(.user.login) | \(.comments)"' \
-            <<< '${{ steps.get_discussions.outputs.data }}')"
-          # 멀티라인 아웃풋을 한 번에 $GITHUB_OUTPUT에 안전 기록
           {
-            echo 'discussions<<EOF'
-            echo '<!-- discussions-list-start -->'
-            echo
             echo '| Title | Author | Comments |'
             echo '|-------|--------|----------|'
-            printf '%s\n' "$rows"
-            echo
-            echo '<!-- discussions-list-end -->'
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+            # jq 필터는 '싱글쿼트'로 감싸서 \(.field) 를 쉘이 건드리지 않게 함
+            jq -r '.[] | "| [\(.title | gsub("[|\r\n]"; " "))](\(.html_url)) | \(.user.login) | \(.comments)"' \
+              <<< '${{ steps.get_discussions.outputs.data }}'
+          } > /tmp/discussions_table.md
 
-      - name: Replace discussions list in README.md
+      # 🔹 README의 마커 사이만 교체 (마커는 그대로 유지)
+      - name: Replace discussions block in README.md
         shell: bash
         run: |
           set -euo pipefail
-          awk -v newblk='${{ steps.rows.outputs.discussions }}' '
-            BEGIN{inblk=0}
-            /<!-- discussions-list-start -->/ { print; print newblk; inblk=1; next }
-            /<!-- discussions-list-end -->/   { print; inblk=0;  next }
-            !inblk { print }
+          awk '
+            /<!-- discussions-list-start -->/ { print; system("cat /tmp/discussions_table.md"); in=1; next }
+            /<!-- discussions-list-end -->/   { print; in=0; next }
+            !in { print }
           ' README.md > README.tmp.md
           mv README.tmp.md README.md
 
