@@ -13,26 +13,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # schedule 트리거에서도 안전하게 owner/repo 추출
-      - name: Extract owner/repo
-        id: repo
+      # schedule 트리거에서도 안전하게 owner/repo 설정 (env로 전달)
+      - name: Set OWNER/REPO env
         shell: bash
         run: |
-          echo "owner=${GITHUB_REPOSITORY%/*}" >> "$GITHUB_OUTPUT"
-          echo "repo=${GITHUB_REPOSITORY#*/}"  >> "$GITHUB_OUTPUT"
+          echo "OWNER=${GITHUB_REPOSITORY%/*}" >> "$GITHUB_ENV"
+          echo "REPO=${GITHUB_REPOSITORY#*/}"  >> "$GITHUB_ENV"
 
-      - name: Fetch discussions via GitHub API
-        id: get_discussions
+      # (선택) 디버그: 현재 브랜치와 파일 확인
+      - name: Debug info
+        shell: bash
+        run: |
+          echo "Branch ref: $GITHUB_REF"
+          ls -al .github/workflows || true
+
+      # Discussions JSON 저장(표준출력 직접 파이프 X, 파일에 안전 저장)
+      - name: Save discussions JSON to file
+        id: save_json
         uses: octokit/request-action@v2.x
         with:
           route: GET /repos/{owner}/{repo}/discussions
-          owner: ${{ steps.repo.outputs.owner }}
-          repo:  ${{ steps.repo.outputs.repo }}
+          owner: ${{ env.OWNER }}
+          repo:  ${{ env.REPO }}
           per_page: 5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 표 파일 생성 (헤더 + rows). $GITHUB_OUTPUT/EOF/echo 파이프 안 씀
+      - name: Write JSON to /tmp/discussions.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          # outputs.data 를 파일로 안전하게 저장 (따옴표/개행 문제 회피)
+          printf '%s' '${{ steps.save_json.outputs.data }}' > /tmp/discussions.json
+
+      # 표(헤더+rows) 생성 — jq 필터는 '싱글쿼트'로 감싸기
       - name: Build discussions table file
         shell: bash
         run: |
@@ -40,50 +54,45 @@ jobs:
           {
             echo '| Title | Author | Comments |'
             echo '|-------|--------|----------|'
-            # jq 필터는 '싱글쿼트'로 감싸서 \(.field)를 쉘이 해석하지 못하게 함
+            # 제목 내 |/개행 제거로 표 깨짐 방지
             jq -r '.[] |
               "| [\(.title | gsub("[|\r\n]"; " "))](\(.html_url)) | \(.user.login) | \(.comments)"
-            ' <<< '${{ steps.get_discussions.outputs.data }}'
+            ' /tmp/discussions.json
           } > /tmp/discussions_table.md
+          echo "Generated table:"
+          cat /tmp/discussions_table.md
 
-      # README의 마커 사이만 Python으로 안전하게 교체 (awk/system/heredoc 없음)
+      # README 마커 사이만 교체 — awk + getline (system/cat 사용 안 함)
       - name: Replace discussions block in README.md
         shell: bash
         run: |
           set -euo pipefail
+          # 마커 존재 확인(없으면 실패)
+          grep -q "<!-- discussions-list-start -->" README.md
+          grep -q "<!-- discussions-list-end -->"   README.md
 
-          # Python 스크립트를 파일로 저장
-          cat >/tmp/replace_discussions.py <<'PY'
-import re, sys
+          awk '
+            /<!-- discussions-list-start -->/ {
+              print
+              while ((getline line < "/tmp/discussions_table.md") > 0) print line
+              close("/tmp/discussions_table.md")
+              inside=1
+              next
+            }
+            /<!-- discussions-list-end -->/ {
+              print
+              inside=0
+              next
+            }
+            !inside { print }
+          ' README.md > README.tmp.md
 
-README = 'README.md'
-TABLE  = '/tmp/discussions_table.md'
-
-with open(README, 'r', encoding='utf-8') as f:
-    readme = f.read()
-with open(TABLE, 'r', encoding='utf-8') as f:
-    body = f.read().strip()
-
-pattern = r"(<!-- discussions-list-start -->)(.*?)(<!-- discussions-list-end -->)"
-new     = r"\1\n" + body + r"\n\3"
-
-out, n = re.subn(pattern, new, readme, flags=re.S)
-if n == 0:
-    print("ERROR: markers not found in README.md", file=sys.stderr)
-    sys.exit(1)
-
-with open(README, 'w', encoding='utf-8') as f:
-    f.write(out)
-
-print("Replaced block successfully.")
-PY
-
-          # 실행
-          python3 /tmp/replace_discussions.py
+          mv README.tmp.md README.md
 
       - name: Commit and push
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
