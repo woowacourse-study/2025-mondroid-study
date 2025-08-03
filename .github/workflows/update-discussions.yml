@@ -17,10 +17,10 @@ jobs:
       # 2. GitHub API로 Discussions 최신 5개 불러오기 (curl 사용)
       - name: Fetch Discussions
         run: |
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/discussions?per_page=5" \
-            > discussions.json
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               "https://api.github.com/repos/${{ github.repository }}/discussions?per_page=5" \
+               > discussions.json
 
       # 3. discussions.json을 Markdown 표 형태로 변환해서 discussions.md 생성
       - name: Make Markdown
