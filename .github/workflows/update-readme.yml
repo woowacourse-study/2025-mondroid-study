@@ -54,13 +54,16 @@ jobs:
           {
             echo '| Title | Author | Comments |'
             echo '|-------|--------|----------|'
-            # 제목 내 |/개행 제거로 표 깨짐 방지
-            jq -r '.[] |
-              "| [\(.title | gsub("[|\r\n]"; " "))](\(.html_url)) | \(.user.login) | \(.comments)"
+            # 최신(updated_at) 기준 내림차순 정렬 후 출력
+            jq -r '
+              sort_by(.updated_at) | reverse
+              | .[]
+              | "| [\(.title | gsub("[|\r\n]"; " "))](\(.html_url)) | \(.user.login) | \(.comments) |"
             ' /tmp/discussions.json
           } > /tmp/discussions_table.md
-          echo "Generated table:"
-          cat /tmp/discussions_table.md
+          # 혹시 모를 CRLF 제거
+          tr -d "\r" < /tmp/discussions_table.md > /tmp/discussions_table.unix.md && mv /tmp/discussions_table.unix.md /tmp/discussions_table.md
+
 
       # README 마커 사이만 교체 — awk + getline (system/cat 사용 안 함)
       - name: Replace discussions block in README.md
