@@ -12,10 +12,6 @@
 
 *스터디 공부 내용 및 인터뷰 과정은 [Discussions](https://github.com/woowacourse-study/2025-mondroid-study/discussions)에서 확인하실 수 있습니다!
 
-## Discussions 최근 글
-<!-- discussions-list-start -->
-<!-- discussions-list-end -->
-
 ## 스터디원
 | <img src="https://github.com/gahyunkim.png" width="125"/> | <img src="https://github.com/ijh1298.png" width="125"/> | <img src="https://github.com/etama123.png" width="125"/> |
 |:---------:|:---------:|:---------:|
