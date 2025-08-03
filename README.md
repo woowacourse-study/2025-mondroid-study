@@ -13,8 +13,16 @@
 *스터디 공부 내용 및 인터뷰 과정은 [Discussions](https://github.com/woowacourse-study/2025-mondroid-study/discussions)에서 확인하실 수 있습니다!
 
 ## Discussions 최근 글
-<!-- discussions-list-start -->
-<!-- discussions-list-end -->
+<!-- discussions-list-start -->."
+".| Title | Author | Comments |
+|-------|--------|----------|
+| [test](https://github.com/woowacourse-study/2025-mondroid-study/discussions/2) | etama123 | 1
+| [Q) 1. 인텐트(Intent)란 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/3) | etama123 | 3
+| [Q) 2. PendingIntent의 목적은 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/4) | etama123 | 3
+| [Q) 3. Serializable과 Parcelable의 차이점은 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/5) | etama123 | 3
+| [Q.add("extras가 달라도 동일한 객체로 인지한다면, 어떻게 다름을 감지할 수 있을까요?")](https://github.com/woowacourse-study/2025-mondroid-study/discussions/6) | gahyunkim | 1
+."
+".<!-- discussions-list-end -->
 
 ## 스터디원
 | <img src="https://github.com/gahyunkim.png" width="125"/> | <img src="https://github.com/ijh1298.png" width="125"/> | <img src="https://github.com/etama123.png" width="125"/> |
