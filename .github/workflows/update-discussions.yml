@@ -2,53 +2,73 @@ name: Update Discussion List in README
 
 on:
   schedule:
-    - cron: "0 * * * *" # 매 시간 0분에 실행
-  workflow_dispatch:     # 수동 실행 가능
+    - cron: "0 * * * *"   # 매 1시간
+  workflow_dispatch:
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 저장소 체크아웃
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # 2. GitHub API로 Discussions 최신 5개 불러오기 (curl 사용)
-      - name: Fetch Discussions
+      - name: Extract owner/repo
+        id: repo
         run: |
-          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               "https://api.github.com/repos/${{ github.repository }}/discussions?per_page=5" \
-               > discussions.json
+          echo "owner=${GITHUB_REPOSITORY%/*}" >> "$GITHUB_OUTPUT"
+          echo "repo=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_OUTPUT"
 
-      # 3. discussions.json을 Markdown 표 형태로 변환해서 discussions.md 생성
-      - name: Make Markdown
+      - name: Fetch discussions via GitHub API
+        id: get_discussions
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/{owner}/{repo}/discussions
+          owner: ${{ steps.repo.outputs.owner }}
+          repo: ${{ steps.repo.outputs.repo }}
+          per_page: 5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Discussions list markdown
+        id: generate_md
+        shell: bash
         run: |
-          echo '<!-- discussions-list-start -->' > discussions.md
-          echo '| Title | Author | Comments |' >> discussions.md
-          echo '|-------|--------|----------|' >> discussions.md
-          jq -r '.[] | "| [\(.title)](\(.html_url)) | \(.user.login) | \(.comments)"' discussions.json >> discussions.md
-          echo '<!-- discussions-list-end -->' >> discussions.md
+          set -euo pipefail
 
-      # 4. README.md에서 마커 사이 영역을 discussions.md 내용으로 교체
-      - name: Replace in README
+          # jq 필터는 반드시 '싱글쿼트'로 감싸기
+          rows="$(printf '%s' "${{ steps.get_discussions.outputs.data }}" \
+            | jq -r '.[] | "| [\(.title)](\(.html_url)) | \(.user.login) | \(.comments)"')"
+
+          # 출력 블록을 한 번에 기록 (중간 실패로 EOF 짤림 방지)
+          {
+            echo 'discussions<<EOF'
+            echo '<!-- discussions-list-start -->'
+            echo
+            echo '| Title | Author | Comments |'
+            echo '|-------|--------|----------|'
+            printf '%s\n' "$rows"
+            echo
+            echo '<!-- discussions-list-end -->'
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Replace discussions list in README.md
+        shell: bash
         run: |
-          awk '
-            {print}
-            /^<!-- discussions-list-start -->/ {
-              getline
-              while($0 !~ /<!-- discussions-list-end -->/) { getline }
-              printfile=1
-              while(getline line < "discussions.md") { print line }
-              next
-            }
-            /^<!-- discussions-list-end -->/ { printfile=0 }
-            !printfile
-          ' README.md > README.tmp.md && mv README.tmp.md README.md
+          set -euo pipefail
+          # 마커 사이만 새 블록으로 교체
+          awk -v newblk='${{ steps.generate_md.outputs.discussions }}' '
+            BEGIN{inblk=0}
+            /<!-- discussions-list-start -->/ {print; print newblk; inblk=1; next}
+            /<!-- discussions-list-end -->/   {print; inblk=0; next}
+            !inblk {print}
+          ' README.md > README.tmp.md
+          mv README.tmp.md README.md
 
-      # 5. 변경 사항 git 커밋 및 푸시
-      - name: Commit & Push
+      - name: Commit and push updated README
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
