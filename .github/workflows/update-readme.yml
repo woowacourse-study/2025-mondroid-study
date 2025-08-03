@@ -67,24 +67,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          # 디버그: 파일과 마커 체크(실패 시 원인 출력)
-          test -f README.md || { echo "README.md not found"; exit 1; }
-          test -s /tmp/discussions_table.md || { echo "/tmp/discussions_table.md is empty or missing"; exit 1; }
-          grep -q "<!-- discussions-list-start -->" README.md || { echo "start marker not found"; exit 1; }
-          grep -q "<!-- discussions-list-end -->"   README.md || { echo "end marker not found"; exit 1; }
       
-          # Perl로 마커 사이를 /tmp/discussions_table.md 내용으로 치환
-          perl -0777 -pe 'BEGIN{
-            local $/;
-            open my $fh, "<", "/tmp/discussions_table.md" or die $!;
-            our $tb = <$fh>;
-            close $fh;
-          } s/(<!-- discussions-list-start -->)(.*?)(<!-- discussions-list-end -->)/$1."\n".$tb."\n".$3/sg' \
-            README.md > README.tmp.md
+          # 마커 존재 확인
+          grep -q "<!-- discussions-list-start -->" README.md
+          grep -q "<!-- discussions-list-end -->"   README.md
+      
+          # 혹시 모를 CRLF 제거(줄바꿈 깨짐 방지)
+          tr -d '\r' < /tmp/discussions_table.md > /tmp/discussions_table_unix.md
+      
+          # README를 "마커 앞부분"과 "마커 뒷부분"으로 분리
+          sed -n '1,/<!-- discussions-list-start -->/p' README.md > /tmp/readme_top.md
+          sed -n '/<!-- discussions-list-end -->/,$p'    README.md > /tmp/readme_bottom.md
+      
+          # 새 표로 사이를 정확히 재구성 (여분 문자/따옴표 제거 효과)
+          {
+            cat /tmp/readme_top.md
+            cat /tmp/discussions_table_unix.md
+            cat /tmp/readme_bottom.md
+          } > README.tmp.md
       
           mv README.tmp.md README.md
-
 
       - name: Commit and push
         shell: bash
