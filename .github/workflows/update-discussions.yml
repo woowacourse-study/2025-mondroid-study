@@ -2,24 +2,28 @@ name: Update Discussion List in README
 
 on:
   schedule:
-    - cron: "0 * * * *"
-  workflow_dispatch:
+    - cron: "0 * * * *" # 매 시간 0분에 실행
+  workflow_dispatch:     # 수동 실행 가능
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
+    steps:
+      # 1. 저장소 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. GitHub API로 Discussions 최신 5개 불러오기 (curl 사용)
       - name: Fetch Discussions
-        id: discussions
         run: |
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
             "https://api.github.com/repos/${{ github.repository }}/discussions?per_page=5" \
             > discussions.json
 
+      # 3. discussions.json을 Markdown 표 형태로 변환해서 discussions.md 생성
       - name: Make Markdown
-        id: makemd
         run: |
           echo '<!-- discussions-list-start -->' > discussions.md
           echo '| Title | Author | Comments |' >> discussions.md
@@ -27,19 +31,31 @@ jobs:
           jq -r '.[] | "| [\(.title)](\(.html_url)) | \(.user.login) | \(.comments)"' discussions.json >> discussions.md
           echo '<!-- discussions-list-end -->' >> discussions.md
 
+      # 4. README.md에서 마커 사이 영역을 discussions.md 내용으로 교체
       - name: Replace in README
         run: |
           awk '
-            {print} 
-            /^<!-- discussions-list-start -->/ {getline; while($0!~/<!-- discussions-list-end -->/){getline}; printfile=1; while(getline line < "discussions.md"){print line}}
-            /^<!-- discussions-list-end -->/ {printfile=0}
+            {print}
+            /^<!-- discussions-list-start -->/ {
+              getline
+              while($0 !~ /<!-- discussions-list-end -->/) { getline }
+              printfile=1
+              while(getline line < "discussions.md") { print line }
+              next
+            }
+            /^<!-- discussions-list-end -->/ { printfile=0 }
             !printfile
-          ' README.md > README2.md && mv README2.md README.md
+          ' README.md > README.tmp.md && mv README.tmp.md README.md
 
+      # 5. 변경 사항 git 커밋 및 푸시
       - name: Commit & Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git diff --cached --quiet || git commit -m "Update Discussions list"
-          git push
+          if ! git diff --cached --quiet; then
+            git commit -m "Update Discussions list"
+            git push
+          else
+            echo "No changes to commit"
+          fi
