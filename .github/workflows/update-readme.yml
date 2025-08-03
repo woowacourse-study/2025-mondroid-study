@@ -47,30 +47,29 @@ jobs:
           printf '%s' '${{ steps.save_json.outputs.data }}' > /tmp/discussions.json
 
       # 표(헤더+rows) 생성 — jq 필터는 '싱글쿼트'로 감싸기
-      - name: Build discussions table file
+      - name: Build discussions table file (latest activity)
         shell: bash
         run: |
           set -euo pipefail
+          # API 응답 저장
           printf '%s' '${{ steps.get_discussions.outputs.data }}' > /tmp/discussions.json
       
           {
             echo '| Title | Author | Comments |'
             echo '|-------|--------|----------|'
             jq -r '
-              # Open만
-              map(select(.state == "open"))
-              # 최근 활동(updated_at) 기준 내림차순
-              | sort_by(.updated_at) | reverse
-              # 상위 5개만
+              # 최신 활동순 (updated_at desc)
+              sort_by(.updated_at) | reverse
+              # 상위 5개
               | .[:5]
-              # 마크다운 표 한 줄씩 생성 (제목의 |/개행 제거)
+              # 제목의 |/개행은 표 깨짐 방지
               | .[]
               | "| [\(.title | gsub("[|\r\n]"; " "))](\(.html_url)) | \(.user.login) | \(.comments) |"
             ' /tmp/discussions.json
           } > /tmp/discussions_table.md
       
-          # CRLF 정리(혹시 모를 줄바꿈 깨짐 방지)
-          tr -d '\r' < /tmp/discussions_table.md > /tmp/discussions_table.unix.md && mv /tmp/discussions_table.unix.md /tmp/discussions_table.md
+          # (윈도 개행 방지)
+          tr -d "\r" < /tmp/discussions_table.md > /tmp/discussions_table.unix && mv /tmp/discussions_table.unix /tmp/discussions_table.md
 
 
 
