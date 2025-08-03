@@ -1,0 +1,57 @@
+name: Update Discussion List in README
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # 매 1시간마다 실행
+  workflow_dispatch:     # 수동 실행 가능
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Fetch discussions via GitHub API
+        id: get_discussions
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/{owner}/{repo}/discussions
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          per_page: 5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Discussions list markdown
+        id: generate_md
+        run: |
+          echo "discussions<<EOF" >> $GITHUB_OUTPUT
+          echo "<!-- discussions-list-start -->" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "| Title | Author | Comments |" >> $GITHUB_OUTPUT
+          echo "|-------|--------|----------|" >> $GITHUB_OUTPUT
+
+          echo "${{ steps.get_discussions.outputs.data }}" | jq -r '.[] | "| [\(.title)](\(.html_url)) | \(.user.login) | \(.comments)"' >> $GITHUB_OUTPUT
+
+          echo "" >> $GITHUB_OUTPUT
+          echo "<!-- discussions-list-end -->" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Replace discussions list in README.md
+        run: |
+          awk "/<!-- discussions-list-start -->/{flag=1;print;system(\"echo '${{ steps.generate_md.outputs.discussions }}'\");next}/<!-- discussions-list-end -->/{flag=0}flag{next}1" README.md > README.tmp.md
+          mv README.tmp.md README.md
+
+      - name: Commit and push updated README
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if ! git diff --cached --quiet; then
+            git commit -m "Update Discussions list"
+            git push origin HEAD:${{ github.ref }}
+          else
+            echo "No changes to commit"
+          fi
