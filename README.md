@@ -14,7 +14,6 @@
 
 ## Discussions 최근 글
 <!-- discussions-list-start -->
-
 <!-- discussions-list-end -->
 
 ## 스터디원
