@@ -1,8 +1,6 @@
 name: Update Discussion List in README
 
 on:
-  schedule:
-    - cron: "0 * * * *"   # 매 1시간
   workflow_dispatch:
   discussion:
     types: [created, edited, answered, unanswered, labeled, unlabeled, category_changed]  # 필요에 맞게 줄여도 됨
