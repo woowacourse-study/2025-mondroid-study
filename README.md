@@ -16,11 +16,11 @@
 <!-- discussions-list-start -->
 | Title | Labels | Comments |
 |-------|--------|----------|
+| [16. 태스크(tasks)와 백 스택(back stack)이란 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/21) |  | 0 |
 | [Q) 15. 딥 링크(deep links)를 어떻게 처리하는지 설명해주세요.](https://github.com/woowacourse-study/2025-mondroid-study/discussions/20) | active, 🍋조이🍋, 🦦타마🦦 | 2 |
 | [Q) 14. ANR 이란 무엇인지, ANR이 발생하는 주요 원인은 무엇이며, 어떻게 예방할 수 있는지 설명해주세요.](https://github.com/woowacourse-study/2025-mondroid-study/discussions/19) | active, 🍋조이🍋, 🍦크림🍦, 🦦타마🦦 | 3 |
 | [Q) 13. 안드로이드는에서 메모리를 어떻게 효율적으로 관리하며, 메모리 누수(memory leaks)를 어떻게 방지하는지 설명해주세요.](https://github.com/woowacourse-study/2025-mondroid-study/discussions/18) | active, 🍋조이🍋, 🍦크림🍦, 🦦타마🦦 | 3 |
 | [Q) 12. 구성 변경(configuration changes)을 어떻게 처리하나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/17) | active, 🍋조이🍋, 🍦크림🍦, 🦦타마🦦 | 5 |
-| [Q) 11. ContentProvider의 목적은 무엇이며, 애플리케이션 간의 안전한 데이터 공유를 어떻게 용이하게 하나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/16) | active, 🍋조이🍋, 🍦크림🍦, 🦦타마🦦 | 6 |
 <!-- discussions-list-end -->
 
 ## 스터디원
