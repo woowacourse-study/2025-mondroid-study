@@ -16,7 +16,7 @@
 <!-- discussions-list-start -->
 | Title | Labels | Comments |
 |-------|--------|----------|
-| [Q) 17. Bundle의 사용 목적에 대해서 설명해 주세요.](https://github.com/woowacourse-study/2025-mondroid-study/discussions/22) |  | 1 |
+| [Q) 17. Bundle의 사용 목적에 대해서 설명해 주세요.](https://github.com/woowacourse-study/2025-mondroid-study/discussions/22) | active, 🍋조이🍋 | 1 |
 | [Q) 18. Activity 또는 Fragment 간에 데이터를 어떻게 전달하나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/23) |  | 0 |
 | [Q) 16. 태스크(tasks)와 백 스택(back stack)이란 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/21) |  | 0 |
 | [Q) 15. 딥 링크(deep links)를 어떻게 처리하는지 설명해주세요.](https://github.com/woowacourse-study/2025-mondroid-study/discussions/20) | active, 🍋조이🍋, 🦦타마🦦 | 2 |
