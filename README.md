@@ -16,9 +16,9 @@
 <!-- discussions-list-start -->
 | Title | Labels | Comments |
 |-------|--------|----------|
-| [Q) 21. SparseArray를 사용하면 어떤 이점이 있나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/27) | active, 🦦타마🦦 | 0 |
 | [Q) 21. SparseArray를 사용하면 어떤 이점이 있나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/26) |  | 0 |
-| [Q) 20. ActivityManager란 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/25) |  | 0 |
+| [Q) 21. SparseArray를 사용하면 어떤 이점이 있나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/27) | active, 🦦타마🦦 | 0 |
+| [Q) 20. ActivityManager란 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/25) | active, 🍦크림🍦 | 0 |
 | [Q) 19. 화면 회전과 같은 구성 변경이 발생하면 Activity에 어떤 변화가 생기나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/24) |  | 0 |
 | [Q) 18. Activity 또는 Fragment 간에 데이터를 어떻게 전달하나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/23) | active, 🍦크림🍦 | 1 |
 <!-- discussions-list-end -->
