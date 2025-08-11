@@ -16,11 +16,11 @@
 <!-- discussions-list-start -->
 | Title | Labels | Comments |
 |-------|--------|----------|
+| [Q) 20. ActivityManager란 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/25) |  | 0 |
 | [Q) 19. 화면 회전과 같은 구성 변경이 발생하면 Activity에 어떤 변화가 생기나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/24) |  | 0 |
 | [Q) 18. Activity 또는 Fragment 간에 데이터를 어떻게 전달하나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/23) | active, 🍦크림🍦 | 1 |
 | [Q) 16. 태스크(tasks)와 백 스택(back stack)이란 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/21) | active, 🦦타마🦦 | 1 |
 | [Q) 17. Bundle의 사용 목적에 대해서 설명해 주세요.](https://github.com/woowacourse-study/2025-mondroid-study/discussions/22) | active, 🍋조이🍋 | 1 |
-| [Q) 15. 딥 링크(deep links)를 어떻게 처리하는지 설명해주세요.](https://github.com/woowacourse-study/2025-mondroid-study/discussions/20) | active, 🍋조이🍋, 🦦타마🦦 | 2 |
 <!-- discussions-list-end -->
 
 ## 스터디원
