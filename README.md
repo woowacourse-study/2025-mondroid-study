@@ -24,7 +24,7 @@
 <!-- discussions-list-end -->
 
 ## 스터디원
-| <img src="https://github.com/gahyunkim.png" width="125"/> | <img src="https://github.com/ijh1298.png" width="125"/> | <img src="https://github.com/etama123.png" width="125"/> |
-|:---------:|:---------:|:---------:|
-|[조이](https://github.com/gahyunkim)</br>|[크림](https://github.com/ijh1298)</br>|[타마](https://github.com/etama123)</br>|
+| <img src="https://github.com/gahyunkim.png" width="125"/> |<img src="https://github.com/HamBeomJoon.png" width="125"/>| <img src="https://github.com/ijh1298.png" width="125"/> | <img src="https://github.com/etama123.png" width="125"/> |
+|:---------:|:---------:|:---------:|:---------:|
+|[조이](https://github.com/gahyunkim)</br>|[미플](https://github.com/HamBeomJoon)</br>|[크림](https://github.com/ijh1298)</br>|[타마](https://github.com/etama123)</br>|
 </br>
