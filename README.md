@@ -16,11 +16,11 @@
 <!-- discussions-list-start -->
 | Title | Labels | Comments |
 |-------|--------|----------|
+| [Q) 22. 런타임 권한(runtime permissions)을 어떻게 처리하나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/28) | active | 0 |
 | [Q) 16. 태스크(tasks)와 백 스택(back stack)이란 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/21) | active, 🦦타마🦦 | 2 |
 | [Q) 21. SparseArray를 사용하면 어떤 이점이 있나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/26) |  | 0 |
 | [Q) 21. SparseArray를 사용하면 어떤 이점이 있나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/27) | active, 🦦타마🦦 | 0 |
 | [Q) 20. ActivityManager란 무엇인가요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/25) | active, 🍦크림🍦 | 0 |
-| [Q) 19. 화면 회전과 같은 구성 변경이 발생하면 Activity에 어떤 변화가 생기나요?](https://github.com/woowacourse-study/2025-mondroid-study/discussions/24) |  | 0 |
 <!-- discussions-list-end -->
 
 ## 스터디원
