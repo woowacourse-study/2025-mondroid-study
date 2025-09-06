@@ -49,8 +49,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # outputs.data 를 파일로 안전하게 저장 (따옴표/개행 문제 회피)
-          printf '%s' "${{ steps.save_json.outputs.data }}" > /tmp/discussions.json
+          run: |
+          set -euo pipefail
+          # 따옴표 붙은 heredoc: 안의 내용이 그대로 파일로 저장됨 (셸/변수/따옴표 영향 없음)
+          cat > /tmp/discussions.json <<'JSON_EOF'
+          ${{ steps.save_json.outputs.data }}
+          JSON_EOF
 
      # 최신 활동순( updated_at desc ) 상위 5개 표 생성
       - name: Build discussions table file (latest activity + labels only)
