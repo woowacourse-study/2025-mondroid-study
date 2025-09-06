@@ -41,7 +41,7 @@ jobs:
           route: GET /repos/{owner}/{repo}/discussions
           owner: ${{ env.OWNER }}
           repo:  ${{ env.REPO }}
-          per_page: 50
+          per_page: 100
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           # outputs.data 를 파일로 안전하게 저장 (따옴표/개행 문제 회피)
-          printf '%s' '${{ steps.save_json.outputs.data }}' > /tmp/discussions.json
+          printf '%s' "${{ steps.save_json.outputs.data }}" > /tmp/discussions.json
 
      # 최신 활동순( updated_at desc ) 상위 5개 표 생성
       - name: Build discussions table file (latest activity + labels only)
